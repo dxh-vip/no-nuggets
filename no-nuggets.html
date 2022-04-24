@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>别点掘金</title>
+  <style media="" data-href="https://fonts.googleapis.com/css?family=Allura|Frijole|Varela+Round">
+    /* latin */
+    @font-face {
+      font-family: 'Allura';
+      font-style: normal;
+      font-weight: 400;
+      src: url(https://fonts.gstatic.com/s/allura/v18/9oRPNYsQpS4zjuA_iwgWHNn7GQ.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    /* latin */
+    @font-face {
+      font-family: 'Frijole';
+      font-style: normal;
+      font-weight: 400;
+      src: url(https://fonts.gstatic.com/s/frijole/v14/uU9PCBUR8oakM2BQ3xTR396EilM.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+  </style>
+  <style type="text/css">
+    body {
+      padding: 0;
+      margin: 0;
+    }
+
+    #game-box {
+      margin: 0 auto;
+      width: 400px;
+    }
+
+    canvas {
+      display: block;
+      margin: 0 auto;
+    }
+
+    #score {
+      width: 200px;
+      font: "微软雅黑";
+      color: #007fff;
+      font-size: 36px;
+      margin: 0 auto;
+      text-align: center;
+      height: 60px;
+      line-height: 60px;
+    }
+
+    #start-btn {
+      width: 150px;
+      height: 50px;
+      color: #fff;
+      background: #007fff;
+      text-align: center;
+      line-height: 50px;
+      border-radius: 5px;
+      font-size: 20px;
+      margin: 30px auto;
+    }
+
+    .cell {
+      width: 1em;
+      height: 1em;
+      font-size: 150px;
+      font-family: Frijole;
+      overflow: hidden;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin: -1em 0 0 -0.5em;
+      opacity: 0;
+      transform-origin: left bottom;
+    }
+
+    .opa {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, .6);
+      display: none;
+    }
+
+    .opa.active {
+      display: block;
+    }
+
+    .num {
+      position: absolute;
+      width: 1em;
+      color: #007fff;
+      line-height: 1em;
+      text-align: center;
+      text-shadow: 1px 1px 2px rgba(255, 255, 255, .3);
+    }
+
+    .cell.active {
+      animation: go 3s;
+    }
+
+    .cell.active .num {
+      animation: run 6s steps(6);
+    }
+
+    @keyframes run {
+      0% {
+        top: 0;
+      }
+
+      100% {
+        top: -6em;
+      }
+    }
+
+    @keyframes go {
+      0% {
+        opacity: 1;
+      }
+
+      74% {
+        opacity: 1;
+        transform: rotate(0deg) scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: rotate(360deg) scale(.01);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="score">得分：0</div>
+  <div id="game-box">
+    <canvas id="game"></canvas>
+  </div>
+  <div class="opa"></div>
+  <div class="cell">
+    <div class="num">3 2 1</div>
+  </div>
+  <div id="start-btn" onclick="startGame()">开始游戏</div>
+  <img id="juejinLogo" style="display: none;" src="data:image/jpeg;base64,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" alt="" srcset="">
+  <script type="text/javascript">
+    var w = 400;
+    var h = 572;
+    var score = 0;
+    var div = document.getElementById("score");
+    var juejinLogo = document.querySelector("#juejinLogo");
+    function Rect(y, arr) {
+      //rect表示一行
+      //y表示这行的高度
+      this.y = y;
+      //arr是一个数组，用于描述，四个小矩形
+      //颜色：0表示白，2表示蓝色，1表示黑色，3表示灰色，大于3也是灰
+      this.arr = arr;
+    }
+
+    var game = document.getElementById("game");
+    game.width = w;
+    game.height = h;
+    var canvas = game.getContext("2d");
+
+    canvas.fillStyle = "#000000";
+    //a里面放入6个Rect
+    var rectArr = resetRectArr();
+    function resetRectArr(){
+      var rectArr = new Array();
+      for (var i = 0; i < 6; i++) {
+        var arr = new Array();
+        for (var j = 0; j < 4; j++) {
+          arr[j] = 0;
+        }
+        //随机点击区块
+        var n = Math.floor(Math.random() * 4);
+        arr[n] = 2;
+        rectArr[i] = new Rect(i * h / 4 - 2 * h / 4, arr);
+      }
+      return rectArr;
+    }
+
+    var backing = null;
+    var backsum = 0;
+    //回退的方法
+    function goBack() {
+      if (backsum >= h / 4) {
+        //停止回退
+        clearInterval(backing);
+        alert("兄弟，你的手速慢了~");
+      }
+      for (var i = 0; i < rectArr.length; i++) {
+        rectArr[i].y--;
+      }
+      drawGame();
+      backsum++;
+    }
+
+    //运动方法
+    function goGame() {
+      drawGame();
+      for (var i = 0; i < rectArr.length; i++) {
+        rectArr[i].y += score / 100 + 1;
+        if (rectArr[i].y > h) {
+          for (var j = 0; j < rectArr[i].arr.length; j++) {
+            if (rectArr[i].arr[j] == 2) {
+              //游戏结束
+              isrunning = false;
+              clearInterval(running);
+              rectArr[i].arr[j] = 1;
+              //手速慢，点击回退
+              backing = setInterval(goBack, 5);
+              return;
+            }
+          }
+
+          //循环创建
+          for (var j = 0; j < rectArr[i].arr.length; j++) {
+            rectArr[i].arr[j] = 0;
+          }
+          var n = Math.floor(Math.random() * 4);
+          rectArr[i].arr[n] = 2;
+          rectArr[i].y -= (h / 4) * 6;
+        }
+      }
+    }
+    //绘制的方法
+
+    function drawGame() {
+      for (var i = 0; i < rectArr.length; i++) {
+        for (var j = 0; j < rectArr[i].arr.length; j++) {
+          //颜色处理
+          switch (rectArr[i].arr[j]) {
+            case 0:
+              canvas.fillStyle = "#ffffff";
+              break;
+            case 1:
+              canvas.fillStyle = "#000000";
+              break;
+            case 2:
+              canvas.fillStyle = "#007fff";
+              break;
+            case 3:
+              canvas.fillStyle = "#dddddd";
+              break;
+            default:
+              canvas.fillStyle = "#dddddd";
+          }
+          //画
+          canvas.fillRect(j * (w / 4), rectArr[i].y, w / 4, h / 4);
+          // 白块新增掘金logo
+          if (rectArr[i].arr[j] == 0) {
+            canvas.drawImage(juejinLogo, j * (w / 4) + (w / 16), rectArr[i].y + (h / 4 - w / 8) / 2, w / 8, w / 8);
+          }
+          //描边
+          canvas.strokeStyle = "#666666";
+          canvas.strokeRect(j * (w / 4), rectArr[i].y, w / 4, h / 4);
+        }
+      }
+      canvas.strokeStyle = "#000000";
+      canvas.strokeRect(0, 0, w, h);
+    }
+
+    var begin = true;
+
+    function onGamedown(event) {
+      if (begin) {
+        begin = false;
+        running = setInterval(goGame, 10);
+      }
+      if (isrunning) {
+        event = event || window.event;
+        var gameBoxClient = document.querySelector("#game-box");
+        var x = event.clientX - gameBoxClient.offsetLeft;
+        var y = event.clientY - gameBoxClient.offsetTop;
+
+        //判断点击的矩形
+        for (var i = 0; i < rectArr.length; i++) {
+          if (rectArr[i].y < y && rectArr[i].y + h / 4 > y) {
+            var j = Math.floor(x / (w / 4));
+            rectArr[i].arr[j]++;
+            if (rectArr[i].arr[j] == 1) {
+              drawGame();
+              clearInterval(running);
+              isrunning = false;
+              alert("你踩到掘金了~好疼~");
+              return;
+            } else if (rectArr[i].arr[j] == 3) {
+              score++;
+              div.innerHTML = "得分：" + score;
+            }
+          }
+        }
+      }
+    }
+
+    var isrunning = true;
+    var running = null;
+    drawGame();
+    function startGame() {
+      document.querySelector(".cell").classList = "cell active";
+      document.querySelector(".opa").classList = "opa active";
+      setTimeout(() => {
+        document.querySelector(".cell").classList = "cell";
+        document.querySelector(".opa").classList = "opa";
+        game.onmousedown = onGamedown;
+      }, 3100)
+    }
+  </script>
+</body>
+
+</html>
